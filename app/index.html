@@ -1,0 +1,34 @@
+<html>
+<head>
+    <script type='text/javascript'src='knockout.debug.js'></script>
+</head>
+<body>
+<p>First name: <input data-bind="value:  EntryId"  /></p>
+<p>Last name: <input data-bind="value:  ResName"  /></p>
+<h2>Hello, <span data-bind="text:  LocationDesc" > </span>!</h2>
+<h2>Hello, <span data-bind="text:  test()" > </span>!</h2>
+
+</body>
+<script type="text/javascript">
+   var s =  {"EntryId":30,"ResName":"主APP图片详情页询价andorid",
+             "Terminal":102,"Location":18,
+                "LocationDesc":"主APP图片详情页询价andorid","ResId":10009,"Product":[3,5],
+                "RelIndex":["CityId","SpecId"],
+                "productQueue":[5,3],
+                "ordertype":0,
+                "RendTemplate":true,
+                "UseServerTemplate":true,
+                "TempOrder":[5,3],
+                "isShowCompetitive":0,"roleM":774,"roleO":774,"roleA":774,
+                "test": function () {
+                       return  ko.pureComputed(function () {
+                           return s.EntryId +"dfdf" ;
+                       });
+       }
+   };
+
+    ko.applyBindings(s);
+</script>
+
+
+</html>
