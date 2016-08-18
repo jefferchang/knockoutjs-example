@@ -3,68 +3,125 @@
     <script type='text/javascript' src='jquery.js'></script>
     <script type='text/javascript' src='jquery.tmpl.min.js'></script>
     <script type='text/javascript' src='knockout.debug.js'></script>
-    <script type='text/javascript' src='simpleGrid.js'></script>
-    <link href="my.css" type="text/css" rel="stylesheet">
+    <script type='text/javascript' src='knockout.pager.js'></script>
+    <script type='text/javascript' src='knockout.loader.js'></script>
+    <link href='knockout.pager.css' rel="stylesheet">
+    <link href="tests.css" type="text/css" rel="stylesheet">
+   <!-- <link href="font-awesome.min.css" rel="stylesheet">-->
 </head>
 
 
 <body>
+<!--
 <div class='liveExample'>
-
     <div data-bind='simpleGrid: gridViewModel'> </div>
-
     <button data-bind='click: addItem'>
         Add item
     </button>
-
     <button data-bind='click: sortByName'>
         Sort by name
     </button>
-
     <button data-bind='click: jumpToFirstPage, enable: gridViewModel.currentPageIndex'>
         Jump to first page
     </button>
 
 </div>
+--> <div id="testBinding2" class="bindingDiv">
+    <input placeholder="Search…" type="search" name="q" data-bind="value: query, valueUpdate: 'keyup'" class="form-control"  autocomplete="off">
+    <table>
+        <thead>
+        <tr><th>$index</th><th>Key</th><th>Value</th> </tr>
+        </thead>
+        <tbody data-bind="pagedForeach: filterArray">
+        <tr>
+            <td data-bind="text: $index"></td>
+            <td data-bind="text: key"></td>
+            <td data-bind="text: value"></td>
+        </tr>
+        </tbody>
+    </table>
+    <div data-bind="pageLinks: array"></div>
+
+</div>
+<button    onclick="pp()">ReLoad</button>
 </body>
 
 
 
 <script type="text/javascript">
-    var initialData = [
-        { name: "Well-Travelled Kitten", sales: 352, price: 75.95 },
-        { name: "Speedy Coyote", sales: 89, price: 190.00 },
-        { name: "Furious Lizard", sales: 152, price: 25.00 },
-        { name: "Indifferent Monkey", sales: 1, price: 99.95 },
-        { name: "Brooding Dragon", sales: 0, price: 6350 },
-        { name: "Ingenious Tadpole", sales: 39450, price: 0.35 },
-        { name: "Optimistic Snail", sales: 420, price: 1.50 }
-    ];
+ function  pp() {
+    var   array3 = [];
+    for(var c=1;c<20;c++){
+        array3.push( { key: 'test' + c, value: 'teff ' + c } );
+    }
 
-    var PagedGridModel = function(items) {
-        this.items = ko.observableArray(items);
-        this.addItem = function() {
-            this.items.push({ name: "New item", sales: 0, price: 100 });
-        };
-        this.sortByName = function() {
-            this.items.sort(function(a, b) {
-                return a.name < b.name ? -1 : 1;
+     viewModel2.array(ko.observableArray(array3));
+
+ }
+
+
+    var array = [];
+     for(var c=1;c<20;c++){
+         array.push( { key: '111' + c, value: '222 ' + c } );
+     }
+    var viewModel2 = {
+        array: ko.observableArray(array),
+        pageSize: ko.observable(10),
+        query: ko.observable(''),
+        filterArray:ko.observableArray(this.array)
+
+    };
+   viewModel2.filterArray = ko.dependentObservable(function () {
+     var search = this.query().toLowerCase();
+       if(search){
+           return ko.utils.arrayFilter(array, function (obj) {
+               return obj.value.indexOf(search) >= 0;
+           });
+       }else{
+           return array;
+       }
+            }, viewModel2);
+    ko.applyBindings(viewModel2, $('#testBinding2')[0]);
+    /*
+
+        var initialData = [
+            { name: "Well-Travelled Kitten", sales: 352, price: 75.95 },
+            { name: "Speedy Coyote", sales: 89, price: 190.00 },
+            { name: "Furious Lizard", sales: 152, price: 25.00 },
+            { name: "Indifferent Monkey", sales: 1, price: 99.95 },
+            { name: "Brooding Dragon", sales: 0, price: 6350 },
+            { name: "Ingenious Tadpole", sales: 39450, price: 0.35 },
+            { name: "Optimistic Snail", sales: 420, price: 1.50 }
+        ];
+
+        var PagedGridModel = function(items) {
+            this.items = ko.observableArray(items);
+            this.addItem = function() {
+                this.items.push({ name: "New item", sales: 0, price: 100 });
+            };
+            this.sortByName = function() {
+                this.items.sort(function(a, b) {
+                    return a.name < b.name ? -1 : 1;
+                });
+            };
+            this.jumpToFirstPage = function() {
+                this.gridViewModel.currentPageIndex(0);
+            };
+            this.gridViewModel = new ko.simpleGrid.viewModel({
+                data: this.items,
+                columns: [
+                    { headerText: "Item Name", rowText: "name" },
+                    { headerText: "Sales Count", rowText: "sales" },
+                    { headerText: "Price", rowText: function (item) { return "$" + item.price.toFixed(2) } }
+                ],
+                itemsOnCurrentPage:  ko.computed(function () {
+                    var startIndex = this.pageSize * this.currentPageIndex();
+                    return ko.utils.unwrapObservable(this.data).slice(startIndex, startIndex + this.pageSize);
+                }, this),
+                pageSize: 4
             });
         };
-        this.jumpToFirstPage = function() {
-            this.gridViewModel.currentPageIndex(0);
-        };
-        this.gridViewModel = new ko.simpleGrid.viewModel({
-            data: this.items,
-            columns: [
-                { headerText: "Item Name", rowText: "name" },
-                { headerText: "Sales Count", rowText: "sales" },
-                { headerText: "Price", rowText: function (item) { return "$" + item.price.toFixed(2) } }
-            ],
-            pageSize: 4
-        });
-    };
-    ko.applyBindings(new PagedGridModel(initialData));
+        ko.applyBindings(new PagedGridModel(initialData));*/
 </script>
 
 
