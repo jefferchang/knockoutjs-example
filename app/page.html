@@ -7,7 +7,7 @@
     <script type='text/javascript' src='knockout.loader.js'></script>
     <link href='knockout.pager.css' rel="stylesheet">
     <link href="tests.css" type="text/css" rel="stylesheet">
-   <!-- <link href="font-awesome.min.css" rel="stylesheet">-->
+    <!-- <link href="font-awesome.min.css" rel="stylesheet">-->
 </head>
 
 
@@ -26,7 +26,20 @@
     </button>
 
 </div>
---> <div id="testBinding2" class="bindingDiv">
+-->
+
+<div id="item1">
+    <h1 data-bind="text:city"> </h1> dfd
+    <p data-bind="with:test">
+        Latitude: <span data-bind="text:latitude"> </span>,
+        Longitude: <span data-bind="text:longitude"> </span>
+    </p>
+
+
+</div>
+<hr>
+<div id="testBinding2" class="bindingDiv">
+    <button    data-bind="click:pp">ReLoad</button>
     <input placeholder="Search…" type="search" name="q" data-bind="value: query, valueUpdate: 'keyup'" class="form-control"  autocomplete="off">
     <table>
         <thead>
@@ -40,88 +53,208 @@
         </tr>
         </tbody>
     </table>
-    <div data-bind="pageLinks: array"></div>
+    <div data-bind="pageLinks: filterArray,page: page"></div>
 
 </div>
-<button    onclick="pp()">ReLoad</button>
+
+
+<hr/>
+
+
+<div id="testBinding7" class="bindingDiv">
+    <div>Items per page: <span data-bind="pageSizeControl: serverMethod, pageSize: pageSize, showAllPageOption: true"></span></div>
+    <table>
+        <thead>
+        <tr><th>$index</th><th>Key</th><th>Value</th><th>Page Size</th></tr>
+        </thead>
+        <tbody data-bind="foreach: currentItems">
+        <tr>
+            <td data-bind="text: $index"></td>
+            <td data-bind="text: key"></td>
+            <td data-bind="text: value"></td>
+            <td class="parentPageSize" data-bind="text: $parent.pageSize"></td>
+        </tr>
+        </tbody>
+    </table>
+    <div data-bind="pageLinks: serverMethod, totalItems: totalItems"></div>
+</div>
+<hr>
+<div id="myTest">
+    <p data-bind="with:lines">
+        price:<input type="text" data-bind='value:productPrice,  valueUpdate: "afterkeydown"' />
+        count:<input type="text" data-bind='visible:productPrice() > 0,value: productCount, valueUpdate: "afterkeydown"' />
+        total:<span data-bind="text:total"></span>
+        <a data-bind='attr:{href:"/home/add/"+id,title:name}'>add</a>
+    </p>
+</div>
 </body>
 
-
-
 <script type="text/javascript">
- function  pp() {
-    var   array3 = [];
-    for(var c=1;c<20;c++){
-        array3.push( { key: 'test' + c, value: 'teff ' + c } );
+    var product = function () {
+        self = this;
+        self.id = 1;
+        self.name = "测试产品";
+        self.productPrice = ko.observable(0);
+        self.productCount = ko.observable(1);
+        self.total = ko.computed(function () {
+            return self.productCount() * self.productPrice();
+        });
     }
+    var products = function () {
+        var self = this;
+        self.lines = ko.observable(new product());
+    }
+    ko.applyBindings(new products(),$("#myTest")[0]);
+</script>
+<script type="text/javascript">
+    ko.applyBindings({
+        city: "London",
+        test: ko.observable({
+            latitude: 51.5001524,
+            longitude:-0.1262362
+        })
+    },$('#item1')[0]);
+</script>
+<script type="text/javascript">
 
-     viewModel2.array(ko.observableArray(array3));
+    function  pp() {
+        $.ajax({
+            url:"www.baidu.com",
+            success: function () {
+                var   array3 = [];
+                for(var c=1;c<200;c++){
+                    array3.push( { key: 'mydk_2' + c, value: 'teff ' + c } );
+                }
+                viewModel2.array(array3);
+            },
+            error: function () {
+                var   array3 = [];
+                for(var c=1;c<200;c++){
+                    array3.push( { key: 'mydk_2' + c, value: 'teff ' + c } );
+                }
+                debugger;
+                viewModel2.array(array3);
+            }
 
- }
+        });
 
-
+    }
     var array = [];
-     for(var c=1;c<20;c++){
-         array.push( { key: '111' + c, value: '222 ' + c } );
-     }
+    for(var c=1;c<200;c++){
+        array.push( { key: 'test_1' + c, value: 'teff_ ' + c } );
+    }
     var viewModel2 = {
         array: ko.observableArray(array),
         pageSize: ko.observable(10),
         query: ko.observable(''),
-        filterArray:ko.observableArray(this.array)
+        page:ko.observable(1),
+        Page:ko.observable(1),
+        filterArray:this.array
 
     };
-   viewModel2.filterArray = ko.dependentObservable(function () {
-     var search = this.query().toLowerCase();
-       if(search){
-           return ko.utils.arrayFilter(array, function (obj) {
-               return obj.value.indexOf(search) >= 0;
-           });
-       }else{
-           return array;
-       }
-            }, viewModel2);
+    viewModel2.query.subscribe(function(d,df){
+        debugger;
+    })
+    viewModel2.filterArray = ko.dependentObservable(function () {
+
+        var search = this.query().toLowerCase();
+        if(search){
+            return ko.utils.arrayFilter( viewModel2.array(), function (obj) {
+                return obj.value.indexOf(search) >= 0;
+            });
+        }else{
+            return   viewModel2.array();
+        }
+    }, viewModel2);
     ko.applyBindings(viewModel2, $('#testBinding2')[0]);
+
+
+
+
+
+
+    var viewModel7 = {
+        currentItems: ko.observableArray(),
+        totalItems: ko.observable(0),
+        pageSize: ko.observable(10)
+    };
+    viewModel7.serverMethod = function (itemsPerPage, page){
+        var  itemsPerPage = 10;
+        var indexOfFirstItemOnCurrentPage = ((page - 1) * itemsPerPage);
+        var pageArray = [];
+        for(var c = indexOfFirstItemOnCurrentPage; c < indexOfFirstItemOnCurrentPage + itemsPerPage; c++) {
+            pageArray.push( { key: 'key_7_' + c, value: 'value ' + c } );
+        }
+
+        $.ajax({
+            url:"www.baidu.com",
+            success: function () {
+                var   array3 = [];
+                for(var c=1;c<200;c++){
+                    array3.push( { key: 'mydk_2' + c, value: 'teff ' + c } );
+                }
+                viewModel7.currentItems(pageArray);
+            },
+            error: function () {
+                var   array3 = [];
+                for(var c=1;c<200;c++){
+                    array3.push( { key: 'mydk_2' + c, value: 'teff ' + c } );
+                }
+                viewModel7.currentItems(pageArray);
+            }
+
+        });
+        //viewModel7.currentItems(pageArray);
+        viewModel7.totalItems(1000000);
+        return pageArray;
+    };
+    ko.applyBindings(viewModel7, $('#testBinding7')[0]);
+
+    viewModel7.pageSize(10);
+
+
+
+
     /*
 
-        var initialData = [
-            { name: "Well-Travelled Kitten", sales: 352, price: 75.95 },
-            { name: "Speedy Coyote", sales: 89, price: 190.00 },
-            { name: "Furious Lizard", sales: 152, price: 25.00 },
-            { name: "Indifferent Monkey", sales: 1, price: 99.95 },
-            { name: "Brooding Dragon", sales: 0, price: 6350 },
-            { name: "Ingenious Tadpole", sales: 39450, price: 0.35 },
-            { name: "Optimistic Snail", sales: 420, price: 1.50 }
-        ];
+     var initialData = [
+     { name: "Well-Travelled Kitten", sales: 352, price: 75.95 },
+     { name: "Speedy Coyote", sales: 89, price: 190.00 },
+     { name: "Furious Lizard", sales: 152, price: 25.00 },
+     { name: "Indifferent Monkey", sales: 1, price: 99.95 },
+     { name: "Brooding Dragon", sales: 0, price: 6350 },
+     { name: "Ingenious Tadpole", sales: 39450, price: 0.35 },
+     { name: "Optimistic Snail", sales: 420, price: 1.50 }
+     ];
 
-        var PagedGridModel = function(items) {
-            this.items = ko.observableArray(items);
-            this.addItem = function() {
-                this.items.push({ name: "New item", sales: 0, price: 100 });
-            };
-            this.sortByName = function() {
-                this.items.sort(function(a, b) {
-                    return a.name < b.name ? -1 : 1;
-                });
-            };
-            this.jumpToFirstPage = function() {
-                this.gridViewModel.currentPageIndex(0);
-            };
-            this.gridViewModel = new ko.simpleGrid.viewModel({
-                data: this.items,
-                columns: [
-                    { headerText: "Item Name", rowText: "name" },
-                    { headerText: "Sales Count", rowText: "sales" },
-                    { headerText: "Price", rowText: function (item) { return "$" + item.price.toFixed(2) } }
-                ],
-                itemsOnCurrentPage:  ko.computed(function () {
-                    var startIndex = this.pageSize * this.currentPageIndex();
-                    return ko.utils.unwrapObservable(this.data).slice(startIndex, startIndex + this.pageSize);
-                }, this),
-                pageSize: 4
-            });
-        };
-        ko.applyBindings(new PagedGridModel(initialData));*/
+     var PagedGridModel = function(items) {
+     this.items = ko.observableArray(items);
+     this.addItem = function() {
+     this.items.push({ name: "New item", sales: 0, price: 100 });
+     };
+     this.sortByName = function() {
+     this.items.sort(function(a, b) {
+     return a.name < b.name ? -1 : 1;
+     });
+     };
+     this.jumpToFirstPage = function() {
+     this.gridViewModel.currentPageIndex(0);
+     };
+     this.gridViewModel = new ko.simpleGrid.viewModel({
+     data: this.items,
+     columns: [
+     { headerText: "Item Name", rowText: "name" },
+     { headerText: "Sales Count", rowText: "sales" },
+     { headerText: "Price", rowText: function (item) { return "$" + item.price.toFixed(2) } }
+     ],
+     itemsOnCurrentPage:  ko.computed(function () {
+     var startIndex = this.pageSize * this.currentPageIndex();
+     return ko.utils.unwrapObservable(this.data).slice(startIndex, startIndex + this.pageSize);
+     }, this),
+     pageSize: 4
+     });
+     };
+     ko.applyBindings(new PagedGridModel(initialData));*/
 </script>
 
 
